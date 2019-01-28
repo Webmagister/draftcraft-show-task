@@ -1,0 +1,132 @@
+body
+{
+    font-size: 16px;
+    position: relative;
+    
+    font-family: 'Roboto';
+}
+
+:root
+{
+    --grid-color: #017063;
+}
+
+*
+{
+    margin: 0;
+    padding: 0;
+}
+
+.title
+{
+    font-size: 48px;
+    font-weight: bold;
+    
+    margin-top: 20px;
+    margin-bottom: 30px;
+}
+
+.list
+{
+    padding-left: 27px;
+}
+
+.list-item
+{
+    font-size: 24px;
+    line-height: 40px;
+}
+
+.grid-container
+{
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.button
+{
+    margin-top: 40px;
+    background: var(--grid-color);
+    border: none;
+    font-size: 16px;
+    color: #fff;
+    font-weight: bold;
+    border-radius: 8px;
+    transition: all .25s ease;
+    max-width: 200px;
+    
+    padding: 15px 30px;
+}
+
+.button:hover
+{
+    background: #017063;
+    transition: all .25s ease;
+    cursor: pointer;
+}
+
+.form
+{
+    display: flex;
+    flex-direction: column;
+}
+
+.form .cell
+{
+    width: 100%;
+    margin: 10px 0;
+}
+
+.label
+{
+    width: 100%;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.input
+{
+    width: 100%;
+    height: 40px;
+    font-size: 16px;
+    padding-left: 8px;
+    outline: 0;
+    
+    border: 1px solid #d8d8d8;
+}
+
+.backButton
+{
+    width: 63px;
+    height: 63px;
+    background: var(--grid-color);
+    
+    position: absolute;
+    left: 0;
+    top: 0;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    border-radius: 8px;
+    outline: 0;
+}
+
+.backButton.hidden
+{
+    display: none;
+}
+
+.backButton:hover
+{
+    cursor: pointer;
+}
+
+.backImage
+{
+    width: 33px;
+    height: 33px;
+}

@@ -1,0 +1,38 @@
+{
+  "name": "draftcraft-show-task",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "gulp scripts",
+    "watch": "gulp watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Webmagister/draftcraft-show-task.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Webmagister/draftcraft-show-task/issues"
+  },
+  "homepage": "https://github.com/Webmagister/draftcraft-show-task#readme",
+  "devDependencies": {
+    "typescript": "^3.2.4"
+  },
+  "dependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/polyfill": "^7.2.5",
+    "@babel/preset-env": "^7.3.1",
+    "babelify": "^10.0.0",
+    "brfs": "^2.0.1",
+    "browserify": "^16.2.3",
+    "gulp": "^4.0.0",
+    "tsify": "^4.0.1",
+    "vinyl-buffer": "^1.0.1",
+    "vinyl-source-stream": "^2.0.0",
+    "watchify": "^3.11.0"
+  }
+}
