@@ -4,22 +4,23 @@ class Input {
     private input: HTMLInputElement;
     private label: HTMLLabelElement;
 
-    constructor(text: string, value?: string) {
+    constructor(data : {text: string, value?: string, type?: string }) {
         this.element = document.createElement('div');
         this.element.classList.add('cell');
 
-        this.createInput(value);
-        this.createLabel(text);
+        this.createInput(data.value, data.type);
+        this.createLabel(data.text);
 
         this.element.appendChild(this.label);
         this.element.appendChild(this.input);
     }
 
-    private createInput(value?: string): void {
+    private createInput(value?: string, type?: string): void {
         this.input = document.createElement('input');
         this.input.classList.add('input');
 
         if (value) this.input.setAttribute('value', value);
+        if (type) this.input.setAttribute('type', type);
     }
 
     private createLabel(text: string): void {
