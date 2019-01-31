@@ -1,20 +1,21 @@
 class Iframe {
-    public readonly element: HTMLIFrameElement;
+    public readonly element: HTMLDivElement;
+    private area: any;
 
     constructor() {
-        this.element = document.createElement('iframe');
+        this.element = document.createElement('div');
+        this.element.setAttribute('id', 'drawable-area');
         this.element.classList.add('embed');
-        this.element.setAttribute('src', 'external/example.html');
-        this.element.setAttribute('type', 'text/html');
-        this.element.setAttribute('name', 'draw');
+
+        this.area = new DrawableArea(this.element);
     }
 
     public setBackground(background: string | ArrayBuffer) {
-        this.element.contentWindow.area.setBackground(background);
+        this.area.setBackground(background);
     }
 
     public getValue(): string {
-        return this.element.contentWindow.area.getValue();
+        return this.area.getValue();
     }
 }
 

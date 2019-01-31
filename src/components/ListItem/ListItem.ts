@@ -18,6 +18,7 @@ class ListItem {
         type: '',
         nextIds: [],
     };
+    private link: HTMLAnchorElement;
 
     constructor(props: IListItemProps) {
         this.element = document.createElement('li');
@@ -31,8 +32,15 @@ class ListItem {
     }
 
     private render(): void {
-        this.element.appendChild(document.createTextNode(this.props.title));
+        this.createLink();
+        this.link.appendChild(document.createTextNode(this.props.title));
+        this.element.appendChild(this.link);
         this.element.addEventListener('click', this.onClick, true);
+    }
+
+    private createLink(): void {
+        this.link = document.createElement('a');
+        this.link.classList.add('link');
     }
 
     private onClick(): void {

@@ -1,21 +1,26 @@
 import Input from '../Input/Input';
+import TextArea from '../Textarea/Textarea';
 import render from '../../modules/Render';
 import Button from '../Button/Button';
 import Embed from '../Embed/Embed';
+
+export enum FormType {
+    topic, type, task
+}
 
 interface IFormProps {
     taskImage?: string;
     help?: string;
     task?: string;
-    title?: string
+    title?: string;
+    formType?: FormType;
 }
 
 class Form {
     public readonly element: HTMLFormElement;
 
-    private props: IFormProps = {};
+    private props: IFormProps;
 
-    private textInputDivs: HTMLElement[] = [];
     private fileInputDiv: HTMLDivElement;
     private fileInput: HTMLInputElement;
     private saveButton: HTMLButtonElement;
@@ -31,15 +36,22 @@ class Form {
 
         this.props = {...data};
 
-        this.render(...this.createForm());
+        if (this.props.formType === FormType.topic) {
+            this.render(...this.createTopicForm());
+        } else if (this.props.formType === FormType.type) {
+            this.render(...this.createTypeForm());
+        } else {
+            this.saveFile = this.saveFile.bind(this);
 
-        this.saveFile = this.saveFile.bind(this);
-        this.saveForm = this.saveForm.bind(this);
+            this.render(...this.createForm());
 
-        this.fileInput = this.fileInputDiv.childNodes[1] as HTMLInputElement;
-        this.fileInput.addEventListener('change', this.saveFile);
+            this.fileInput = this.fileInputDiv.childNodes[1] as HTMLInputElement;
+            this.fileInput.addEventListener('change', this.saveFile);
+        }
 
-        this.element.addEventListener('submit', this.saveForm);
+        this.sendForm = this.sendForm.bind(this);
+
+        this.element.addEventListener('submit', this.sendForm);
     }
 
     private render(...elements: HTMLElement[]): void {
@@ -48,7 +60,7 @@ class Form {
 
     private createForm(): HTMLElement[] {
         this.title = new Input({text: 'Заголовок', value: this.props.title}).element;
-        this.task = new Input({text: 'Текст задания', value: this.props.task}).element;
+        this.task = new TextArea({text: 'Текст задания', value: this.props.task}).element;
         this.type = new Input({text: 'Тип задания'}).element;
         this.help = new Input({text: 'Подсказка', value: this.props.help}).element;
         this.fileInputDiv = new Input({text: 'Картинка задания', value: this.props.taskImage, type: 'file'}).element;
@@ -56,6 +68,24 @@ class Form {
         this.saveButton = new Button({text: 'Сохранить', type: 'submit'}).element;
 
         return [this.title, this.task, this.type, this.help, this.fileInputDiv, this.embed.element, this.saveButton];
+    }
+
+    private createTopicForm(): HTMLElement[] {
+        this.title = new Input({text: 'Заголовок', value: this.props.title}).element;
+        this.type = new Input({text: 'Тип задания'}).element;
+
+        this.saveButton = new Button({text: 'Сохранить', type: 'submit'}).element;
+
+        return [this.title, this.type, this.saveButton];
+    }
+
+    private createTypeForm(): HTMLElement[] {
+        this.title = new Input({text: 'Заголовок', value: this.props.title}).element;
+        this.task = new Input({text: 'Задание'}).element;
+
+        this.saveButton = new Button({text: 'Сохранить', type: 'submit'}).element;
+
+        return [this.title, this.task, this.saveButton];
     }
 
     private saveFile(): void {
@@ -67,17 +97,32 @@ class Form {
         fileReader.readAsDataURL(file);
     }
 
-    private saveForm(e: Event): void {
+    private sendForm(e: Event): void {
         e.preventDefault();
-        const answer = {
-            "id": 1,                                // id уровня
-            "task": this.task.lastChild.value,              // задание
-            "help": this.help.lastChild.value,              // help
-            "result": this.embed.getValue(),            // результат
-            "img": this.fileInput.files[0],               // сопутствующая картинка
-            "enable": true                          // доступен ли сейчас для пользователя
-        };
-        console.dir(answer);
+        let requestBody;
+
+        if (this.props.formType === FormType.topic) {
+            requestBody = {
+                "id": 1,                                // id уровня
+                "title": this.title.lastChild.value,      // задание
+            };
+        } else if (this.props.formType === FormType.type) {
+            requestBody = {
+                "id": 1,                                // id уровня
+                "title": this.title.lastChild.value,      // задание
+            };
+        } else {
+            requestBody = {
+                "id": 1,                                // id уровня
+                "task": this.task.lastChild.value,      // задание
+                "help": this.help.lastChild.value,      // help
+                "result": this.embed.getValue(),        // результат
+                "img": this.fileInput.files[0],         // сопутствующая картинка
+                "enable": true                          // доступен ли сейчас для пользователя
+            };
+        }
+
+        console.dir(requestBody);
     }
 }
 

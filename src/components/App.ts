@@ -4,7 +4,7 @@ import Title from './Title/Title';
 import OrderedList from './OrderedList/OrderedList';
 import ListItem, {IListItemProps} from "./ListItem/ListItem";
 import Button from "./Button/Button";
-import Form from "./Form/Form";
+import Form, {FormType} from "./Form/Form";
 import BackButton from "./BackButton/BackButton";
 
 enum Route {TOPICS, TYPES, TASKS, FORM}
@@ -37,7 +37,8 @@ interface IAppProps {
     taskImage?: string;
     help?: string;
     task?: string;
-    title?: string
+    title?: string;
+    formType?: FormType;
 }
 
 interface IPageState {
@@ -181,7 +182,10 @@ class App {
     private getTopicsElements(): HTMLElement[] {
         const title: HTMLHeadingElement = new Title('Все темы').element;
         const list: HTMLOListElement = new OrderedList(...this.getListItems()).element;
-        const button: HTMLButtonElement = new Button({text: 'Добавить новое'}).element;
+        const button: HTMLButtonElement = new Button({
+            text: 'Добавить новое',
+            clickHandler: this.openNewTaskCreationForm
+        }).element;
 
         return [title, list, button];
     }
@@ -189,7 +193,10 @@ class App {
     private getTypesElements(): HTMLElement[] {
         const title: HTMLHeadingElement = new Title('Все задания').element;
         const list: HTMLOListElement = new OrderedList(...this.getListItems()).element;
-        const button: HTMLButtonElement = new Button({text: 'Добавить новое'}).element;
+        const button: HTMLButtonElement = new Button({
+            text: 'Добавить новое',
+            clickHandler: this.openNewTaskCreationForm
+        }).element;
 
         return [title, list, button];
     }
@@ -206,12 +213,27 @@ class App {
     }
 
     private openNewTaskCreationForm(): void {
+        this.savePageData();
+        if (this.props.route === Route.TOPICS) {
+            this.props.formType = FormType.topic;
+        } else if (this.props.route === Route.TYPES) {
+            this.props.formType = FormType.type;
+        } else {
+            this.props.formType = FormType.task;
+        }
+
         this.props.route = Route.FORM;
 
-        this.props.help = null;
-        this.props.taskImage = null;
-        this.props.title = null;
-        this.props.task = null;
+        if (this.props.formType === FormType.topic) {
+            this.props.title = null;
+        } else if (this.props.formType === FormType.type) {
+            this.props.title = null;
+        } else {
+            this.props.help = null;
+            this.props.taskImage = null;
+            this.props.title = null;
+            this.props.task = null;
+        }
 
         this.render();
     }
@@ -229,6 +251,7 @@ class App {
             this.props.taskImage = taskImage;
             this.props.title = title;
             this.props.task = task;
+            this.props.formType = FormType.task;
 
             this.render();
         }
