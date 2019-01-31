@@ -4,7 +4,7 @@ class Input {
     private input: HTMLInputElement;
     private label: HTMLLabelElement;
 
-    constructor(data : {text: string, value?: string, type?: string }) {
+    constructor(data: { text: string, value?: string, type?: string }) {
         this.element = document.createElement('div');
         this.element.classList.add('cell');
 
@@ -20,7 +20,10 @@ class Input {
         this.input.classList.add('input');
 
         if (value) this.input.setAttribute('value', value);
-        if (type) this.input.setAttribute('type', type);
+        if (type) {
+            this.input.setAttribute('type', type);
+            this.input.setAttribute('accept', 'image/*');
+        }
     }
 
     private createLabel(text: string): void {

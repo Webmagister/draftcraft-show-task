@@ -3,6 +3,7 @@ import TextArea from '../Textarea/Textarea';
 import render from '../../modules/Render';
 import Button from '../Button/Button';
 import Embed from '../Embed/Embed';
+import {ISubmitHandlerParams} from "../App";
 
 export enum FormType {
     topic, type, task
@@ -14,6 +15,8 @@ interface IFormProps {
     task?: string;
     title?: string;
     formType?: FormType;
+    id?: number;
+    submitHandler?: (data: ISubmitHandlerParams) => void;
 }
 
 class Form {
@@ -59,7 +62,6 @@ class Form {
     }
 
     private createForm(): HTMLElement[] {
-        this.title = new Input({text: 'Заголовок', value: this.props.title}).element;
         this.task = new TextArea({text: 'Текст задания', value: this.props.task}).element;
         this.type = new Input({text: 'Тип задания'}).element;
         this.help = new Input({text: 'Подсказка', value: this.props.help}).element;
@@ -67,7 +69,7 @@ class Form {
         this.embed = new Embed();
         this.saveButton = new Button({text: 'Сохранить', type: 'submit'}).element;
 
-        return [this.title, this.task, this.type, this.help, this.fileInputDiv, this.embed.element, this.saveButton];
+        return [this.task, this.type, this.help, this.fileInputDiv, this.embed.element, this.saveButton];
     }
 
     private createTopicForm(): HTMLElement[] {
@@ -99,30 +101,15 @@ class Form {
 
     private sendForm(e: Event): void {
         e.preventDefault();
-        let requestBody;
-
-        if (this.props.formType === FormType.topic) {
-            requestBody = {
-                "id": 1,                                // id уровня
-                "title": this.title.lastChild.value,      // задание
-            };
-        } else if (this.props.formType === FormType.type) {
-            requestBody = {
-                "id": 1,                                // id уровня
-                "title": this.title.lastChild.value,      // задание
-            };
-        } else {
-            requestBody = {
-                "id": 1,                                // id уровня
-                "task": this.task.lastChild.value,      // задание
-                "help": this.help.lastChild.value,      // help
-                "result": this.embed.getValue(),        // результат
-                "img": this.fileInput.files[0],         // сопутствующая картинка
-                "enable": true                          // доступен ли сейчас для пользователя
-            };
-        }
-
-        console.dir(requestBody);
+        if (this.props.submitHandler) this.props.submitHandler({
+            title: this.title,
+            task: this.task,
+            id: this.props.id,
+            help: this.help,
+            embed: this.embed,
+            fileInput: this.fileInput,
+            formType: this.props.formType,
+        });
     }
 }
 

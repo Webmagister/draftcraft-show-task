@@ -1,11 +1,12 @@
 import {IClickHandlerParams} from "../App";
 
 export interface IListItemProps {
-    title: string;
+    id: number;
+    title?: string;
     type: string;
     nextIds?: number[];
-    clickHandler?: (data: IClickHandlerParams) => void;
-    taskImage?: string;
+    clickHandler: (data: IClickHandlerParams) => void;
+    img?: string;
     task?: string;
     help?: string;
 }
@@ -13,11 +14,7 @@ export interface IListItemProps {
 class ListItem {
     public readonly element: HTMLLIElement;
 
-    private readonly props: IListItemProps = {
-        title: '',
-        type: '',
-        nextIds: [],
-    };
+    private readonly props: IListItemProps;
     private link: HTMLAnchorElement;
 
     constructor(props: IListItemProps) {
@@ -33,7 +30,7 @@ class ListItem {
 
     private render(): void {
         this.createLink();
-        this.link.appendChild(document.createTextNode(this.props.title));
+        this.link.appendChild(document.createTextNode(this.props.title || this.props.task));
         this.element.appendChild(this.link);
         this.element.addEventListener('click', this.onClick, true);
     }

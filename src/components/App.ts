@@ -6,156 +6,175 @@ import ListItem, {IListItemProps} from "./ListItem/ListItem";
 import Button from "./Button/Button";
 import Form, {FormType} from "./Form/Form";
 import BackButton from "./BackButton/BackButton";
+import Embed from './Embed/Embed';
 
-enum Route {TOPICS, TYPES, TASKS, FORM}
+enum Route {TOPICS = 'topics', TYPES = 'types', TASKS = 'tasks', FORM = 'form'}
 
-export interface IInfo {
-    id: number;
+export interface ITask {
+    id?: number;
+    img: string;
+    help: string;
+    task: string;
+    correct: string;
+}
+
+interface ITopic {
+    id?: number;
     title: string;
     types?: number[];
-    tasks?: number[];
-    taskImage?: string;
-    help?: string;
-    task?: string;
+}
+
+interface IType extends ITopic{
+    tasks: number[];
 }
 
 export interface IData {
-    [id: number]: IInfo;
+    topics: ITopic[];
+    types: IType[];
+    tasks: ITask[];
 }
 
 export interface IClickHandlerParams {
     type?: string;
     nextIds?: number[];
     title?: string;
-    taskImage?: string;
+    img?: string;
     help?: string;
     task?: string;
+    id?: number;
 }
 
 interface IAppProps {
     route: Route;
-    taskImage?: string;
+    id: number;
+    data?: IData;
+    img?: string;
     help?: string;
     task?: string;
     title?: string;
     formType?: FormType;
 }
 
-interface IPageState {
-    topics: IListItemProps[];
-    types: IListItemProps[];
+export interface ISubmitHandlerParams {
+    id?: number;
+    formType?: FormType;
+    title?: HTMLDivElement;
+    task?: HTMLDivElement;
+    help?: HTMLDivElement;
+    fileInput?: HTMLInputElement;
+    embed?: Embed;
+}
+
+interface IRequestData {
+    data: IData;
 }
 
 class App {
-    private static getNextIds(currType: string, data: IInfo): number[] {
-        switch (currType) {
-            case 'topic':
-                return data.types;
-            case 'type':
-                return data.tasks;
-            default:
-                return [];
-        }
-    }
-
     public readonly element: HTMLElement;
     private readonly backButton: HTMLButtonElement;
 
     private listItemsData: IListItemProps[] = [];
-    private pageState: IPageState = {
-        topics: [],
-        types: [],
-    };
+    private typesPageState: IListItemProps[] = [];
+    private nextIds: number[] = [];
     private props: IAppProps = {
-        route: Route.TOPICS
+        route: Route.TOPICS,
+        id: null,
     };
+    private previousRoute: Route;
 
     constructor() {
         this.element = document.createElement('div');
         this.element.classList.add('grid-container');
 
-        this.fetchTopics();
+        this.fetchData();
+        this.props.route = Route.TOPICS;
 
         this.listItemClickHandler = this.listItemClickHandler.bind(this);
         this.openNewTaskCreationForm = this.openNewTaskCreationForm.bind(this);
         this.handlerBackButton = this.handlerBackButton.bind(this);
+        this.submitHandler = this.submitHandler.bind(this);
 
         this.backButton = new BackButton(this.handlerBackButton).element;
     }
 
-    private fetchTopics(): void {
-        FetchWorker.fetchTopics()
+    private fetchData(): void {
+        FetchWorker.fetchData()
             .then((data: IData) => {
-                this.setUpData(data, 'topic');
+                this.props.data = data;
 
-                this.props.route = Route.TOPICS;
                 this.render();
             })
             .catch((error: Error) => console.error(error));
     }
 
     private handlerBackButton(): void {
-        if (this.props.route === Route.TYPES) {
-            this.props.route = Route.TOPICS;
-            this.listItemsData = [...this.pageState.topics];
-        }
-
-        if (this.props.route === Route.TASKS) {
-            this.props.route = Route.TYPES;
-            this.listItemsData = [...this.pageState.types];
-        }
-
-        if (this.props.route === Route.FORM) this.props.route = Route.TASKS;
+        if (this.props.route === Route.TYPES) this.props.route = Route.TOPICS;
+        if (this.props.route === Route.TASKS) this.props.route = Route.TYPES;
+        if (this.props.route === Route.FORM) this.props.route = this.previousRoute;
 
         this.render();
     }
 
-    private fetchTypes(ids: number[]): void {
-        FetchWorker.fetchTypes()
-            .then((data: IData) => {
-                const dataToSet: IInfo[] = ids.map((id: number): IInfo => data[id]);
-                this.setUpData(dataToSet, 'type');
+    private setUpData(): void {
+        if (this.props.route === Route.FORM) return;
 
-                this.props.route = Route.TYPES;
-                this.render();
-            })
-            .catch((error: Error) => console.error(error));
+        const {route} = this.props;
+
+        if (route === Route.TOPICS) this.listItemsData = this.getTopicsData();
+        if (route === Route.TYPES) this.listItemsData = this.getTypesData();
+        if (route === Route.TASKS) this.listItemsData = this.getTasksData();
     }
 
-    private fetchTasks(ids: number[]): void {
-        FetchWorker.fetchTasks()
-            .then((data: IData) => {
-                const dataToSet: IInfo[] = ids.map((id: number): IInfo => data[id]);
-                this.setUpData(dataToSet, 'task');
-
-                this.props.route = Route.TASKS;
-                this.render();
-            })
-            .catch((error: Error) => console.error(error));
-    }
-
-    private setUpData(data: IData | IInfo[], type: string): void {
-        this.savePageData();
-        this.listItemsData = [];
-
-        for (const prop in data) {
-            const props: IListItemProps = {
-                title: data[prop].title,
-                type,
-                nextIds: App.getNextIds(type, data[prop]),
-                clickHandler: this.listItemClickHandler,
-                task: data[prop].task,
-                taskImage: data[prop].taskImage,
-                help: data[prop].help
+    private getTopicsData(): IListItemProps[] {
+        return this.props.data.topics.map((item: ITopic): IListItemProps => {
+            return {
+                id: item.id,
+                type: 'topic',
+                title: item.title,
+                nextIds: item.types,
+                clickHandler: this.listItemClickHandler
             };
+        });
+    }
 
-            this.listItemsData.push(props);
+    private getTypesData(): IListItemProps[] {
+        if (this.typesPageState.length !== 0) {
+            const listItemsProps: IListItemProps[] = [...this.typesPageState];
+            this.typesPageState = [];
+
+            return listItemsProps;
         }
+
+        return this.props.data.types.filter((item: IType): boolean => {
+            return this.nextIds.includes(item.id);
+        }).map((item: IType): IListItemProps => {
+            return {
+                id: item.id,
+                type: 'type',
+                title: item.title,
+                nextIds: item.tasks,
+                clickHandler: this.listItemClickHandler
+            };
+        });
+    }
+
+    private getTasksData(): IListItemProps[] {
+        return this.props.data.tasks.filter((item: ITask): boolean => {
+            return this.nextIds.includes(item.id);
+        }).map((item: ITask): IListItemProps => {
+            return {
+                id: item.id,
+                type: 'task',
+                clickHandler: this.listItemClickHandler,
+                img: item.img,
+                help: item.help,
+                task: item.task
+            };
+        });
     }
 
     private savePageData(): void {
-        if (this.props.route === Route.TOPICS) this.pageState.topics = [...this.listItemsData];
-        if (this.props.route === Route.TYPES) this.pageState.types = [...this.listItemsData];
+        if (this.props.route === Route.TYPES) this.typesPageState = [...this.listItemsData];
     }
 
     private render() {
@@ -165,11 +184,13 @@ class App {
             this.backButton.classList.remove('hidden');
         }
 
+        this.setUpData();
+
         Render(this.element, this.backButton, ...this.getElements());
     }
 
     private getFormElements(): HTMLElement[] {
-        return [new Form({...this.props}).element];
+        return [new Form({...this.props, submitHandler: this.submitHandler}).element];
     }
 
     private getElements(): HTMLElement[] {
@@ -215,10 +236,13 @@ class App {
     private openNewTaskCreationForm(): void {
         this.savePageData();
         if (this.props.route === Route.TOPICS) {
+            this.previousRoute = Route.TOPICS;
             this.props.formType = FormType.topic;
         } else if (this.props.route === Route.TYPES) {
+            this.previousRoute = Route.TYPES;
             this.props.formType = FormType.type;
         } else {
+            this.previousRoute = Route.TASKS;
             this.props.formType = FormType.task;
         }
 
@@ -226,13 +250,16 @@ class App {
 
         if (this.props.formType === FormType.topic) {
             this.props.title = null;
+            this.props.id = null;
         } else if (this.props.formType === FormType.type) {
             this.props.title = null;
+            this.props.id = null;
         } else {
             this.props.help = null;
-            this.props.taskImage = null;
+            this.props.img = null;
             this.props.title = null;
             this.props.task = null;
+            this.props.id = null;
         }
 
         this.render();
@@ -242,19 +269,75 @@ class App {
         return this.listItemsData.map((props: IListItemProps) => new ListItem(props).element);
     }
 
-    private listItemClickHandler({type, nextIds, title, taskImage, help, task}: IClickHandlerParams): void {
-        if (type === 'topic') this.fetchTypes(nextIds);
-        if (type === 'type') this.fetchTasks(nextIds);
+    private listItemClickHandler({type, nextIds, img, help, task, id}: IClickHandlerParams): void {
+        if (type === 'topic') {
+            this.nextIds = [...nextIds];
+            this.props.route = Route.TYPES;
+        }
+        if (type === 'type') {
+            this.nextIds = [...nextIds];
+            this.props.route = Route.TASKS;
+
+            this.savePageData();
+        }
         if (type === 'task') {
+            this.previousRoute = Route.TASKS;
             this.props.route = Route.FORM;
             this.props.help = help;
-            this.props.taskImage = taskImage;
-            this.props.title = title;
+            this.props.img = img;
             this.props.task = task;
             this.props.formType = FormType.task;
-
-            this.render();
+            this.props.id = id;
         }
+
+        this.render();
+    }
+
+    private submitHandler(data: ISubmitHandlerParams): void {
+        let requestBody;
+        const {formType, title, task, id, help, embed, fileInput}: ISubmitHandlerParams = data;
+
+        const newData: IRequestData = {
+            data: this.props.data
+        };
+
+        if (formType === FormType.topic) {
+            newData.data.topics.push(
+                {
+                    title: title.lastChild.value,
+                    types: task.lastChild.value
+                }
+            );
+        } else if (formType === FormType.type) {
+            newData.data.types.push(
+                {
+                    title: title.lastChild.value,
+                    tasks: task.lastChild.value
+                }
+            );
+        } else {
+            const requestBody: ITask = {
+                task: task.lastChild.value as string,
+                help: help.lastChild.value as string,
+                correct: embed.getValue(),
+                img: String(fileInput.files[0]),
+            };
+
+            if (id) {
+                requestBody.id = id;
+
+                newData.data.tasks.forEach((item: ITask) => {
+                    if (item.id !== id) return;
+
+                    item = {...requestBody};
+                })
+            } else {
+                newData.data.tasks.push(requestBody);
+            }
+        }
+
+        // FetchWorker.sendDataToServer(JSON.stringify(newData));
+        // this.props.data = newData;
     }
 }
 
