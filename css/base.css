@@ -151,3 +151,15 @@ body
     border: 1px solid #d8d8d8;
     outline: none;
 }
+
+.select
+{
+    width: 100%;
+    border: 1px solid #d8d8d8;
+    outline: none;
+}
+
+.select option
+{
+    padding: 6px 0;
+}

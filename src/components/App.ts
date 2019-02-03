@@ -24,7 +24,7 @@ interface ITopic {
     types?: number[];
 }
 
-interface IType extends ITopic{
+export interface IType extends ITopic{
     tasks: number[];
 }
 
@@ -305,14 +305,14 @@ class App {
             newData.data.topics.push(
                 {
                     title: title.lastChild.value,
-                    types: task.lastChild.value
+                    types: [...task.lastChild.options].filter(option => option.selected).map(option => option.value)
                 }
             );
         } else if (formType === FormType.type) {
             newData.data.types.push(
                 {
                     title: title.lastChild.value,
-                    tasks: task.lastChild.value
+                    tasks: [...task.lastChild.options].filter(option => option.selected).map(option => option.value)
                 }
             );
         } else {
@@ -335,6 +335,8 @@ class App {
                 newData.data.tasks.push(requestBody);
             }
         }
+
+        console.dir(newData);
 
         // FetchWorker.sendDataToServer(JSON.stringify(newData));
         // this.props.data = newData;

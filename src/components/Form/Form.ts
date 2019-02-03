@@ -3,7 +3,8 @@ import TextArea from '../Textarea/Textarea';
 import render from '../../modules/Render';
 import Button from '../Button/Button';
 import Embed from '../Embed/Embed';
-import {ISubmitHandlerParams} from "../App";
+import Select from '../Select/Select';
+import {IData, ISubmitHandlerParams} from "../App";
 
 export enum FormType {
     topic, type, task
@@ -17,6 +18,7 @@ interface IFormProps {
     formType?: FormType;
     id?: number;
     submitHandler?: (data: ISubmitHandlerParams) => void;
+    data?: IData;
 }
 
 class Form {
@@ -63,27 +65,26 @@ class Form {
 
     private createForm(): HTMLElement[] {
         this.task = new TextArea({text: 'Текст задания', value: this.props.task}).element;
-        this.type = new Input({text: 'Тип задания'}).element;
         this.help = new Input({text: 'Подсказка', value: this.props.help}).element;
         this.fileInputDiv = new Input({text: 'Картинка задания', value: this.props.taskImage, type: 'file'}).element;
         this.embed = new Embed();
         this.saveButton = new Button({text: 'Сохранить', type: 'submit'}).element;
 
-        return [this.task, this.type, this.help, this.fileInputDiv, this.embed.element, this.saveButton];
+        return [this.task, this.help, this.fileInputDiv, this.embed.element, this.saveButton];
     }
 
     private createTopicForm(): HTMLElement[] {
         this.title = new Input({text: 'Заголовок', value: this.props.title}).element;
-        this.type = new Input({text: 'Тип задания'}).element;
+        this.task = new Select({text: 'Тип задания', option: this.props.data.types}).element;
 
         this.saveButton = new Button({text: 'Сохранить', type: 'submit'}).element;
 
-        return [this.title, this.type, this.saveButton];
+        return [this.title, this.task, this.saveButton];
     }
 
     private createTypeForm(): HTMLElement[] {
         this.title = new Input({text: 'Заголовок', value: this.props.title}).element;
-        this.task = new Input({text: 'Задание'}).element;
+        this.task = new Select({text: 'Задание', option: this.props.data.tasks}).element;
 
         this.saveButton = new Button({text: 'Сохранить', type: 'submit'}).element;
 
